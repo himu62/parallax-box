@@ -1,0 +1,134 @@
+<!--
+@license
+Copyright (c) 2015 himu62 All rights reserved.
+This code is used under the MIT license.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="parallax-container">
+<style>
+:host {
+	position: relative;
+	overflow: hidden;
+	display: block;
+}
+#parallax-wrapper {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	overflow: hidden;
+}
+#prallax-content-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+}
+</style>
+<template>
+	<div id="parallax-wrapper">
+		<div id="parallax-content-wrapper">
+			<content></content>
+		</div>
+	</div>
+</template>
+</dom-module>
+
+<script>
+Polymer({
+	is: 'parallax-container',
+	properties: {
+
+		// event listener
+		// 'scroll' or 'track'
+		mode: {
+			type: String,
+			value: 'scroll'
+		},
+
+		// scroll direction
+		// 'v'(vertical) or 'h'(horizontal)
+		direction: {
+			type: String,
+			value: 'v'
+		}
+	},
+	listeners: {
+		'parallax-element-register': '_registerElement'
+	},
+	_registerElement: function(e) {
+		this.async(function() {
+			var index = this._children.length + 1;
+
+			e.target.top = e.target.top || 0;
+			e.target.left = e.target.left || 0;
+			e.target.height = e.target.clientHeight || parseInt(e.target.style.height) || 0;
+			e.target.width = e.target.clientWidth || parseInt(e.target.style.width) || 0;
+
+			if(!e.target.z) {
+				e.target.z = index;
+			}
+
+			e.target.style.position = 'absolute';
+			e.target.style.top = e.target.top;
+			e.target.style.left = e.target.left;
+			e.target.style.zIndex = this.style.zIndex ? this.style.zIndex + e.target.z : e.target.z;
+
+			if(this.mode == 'scroll') {
+				if(this.direction == 'v') {
+					this._content.style.height = Math.max(this._content.clientHeight, e.target.top + e.target.height) + 'px';
+				} else {
+					this._content.style.width = Math.max(this._content.clientWidth, e.target.left + e.target.width) + 'px';
+				}
+			}
+
+			if(!e.target.sensitivity) {
+				e.target.sensitivity = index * 0.8;
+			}
+
+			this._children.push(e.target);
+		}, 10);
+	},
+	ready: function() {
+		this._children = [];
+		this._wrapper = this.$['parallax-wrapper'];
+		this._content = this.$['parallax-content-wrapper'];
+
+		this._wrapper.removeEventListener('scroll', this._scroll);
+		this._wrapper.removeEventListener('mousemove', this._track);
+
+		if(this.mode == 'scroll') {
+			this._wrapper.addEventListener('scroll', this._scroll.bind(this));
+
+			if(this.direction == 'v') {
+				this._wrapper.style.overflowY = 'scroll';
+			} else {
+				this._wrapper.style.overflowX = 'scroll';
+			}
+		} else {
+			this._wrapper.addEventListener('mousemove', this._track.bind(this));
+			this._content.style.right = 0;
+			this._content.style.bottom = 0;
+		}
+	},
+	_scroll: function() {
+		if(this.direction == 'v') {
+			for(var i in this._children) {
+				this._children[i]._scrollY(this._wrapper.scrollTop);
+			}
+		} else {
+			for(var i in this._children) {
+				this._children[i]._scrollX(this._wrapper.scrollLeft);
+			}
+		}
+	},
+	_track: function(e) {
+		for(var i in this._children) {
+			this._children[i]._track(e.clientX - this.clientWidth / 2, e.clientY - this.clientHeight / 2);
+		}
+	}
+});
+</script>

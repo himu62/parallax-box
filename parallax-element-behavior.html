@@ -1,0 +1,95 @@
+<!--
+@license
+Copyright (c) 2015 himu62 All rights reserved.
+This code is used under the MIT license.
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<script>
+Polymer.ParallaxElementBehavior = {
+	properties: {
+
+		// z-index in the container
+		z: {
+			type: Number,
+			value: 1
+		},
+
+		// sensitivity of moving
+		// 1 is nutral, higher is more sensitive
+		sensitivity: {
+			type: Number,
+			value: 1
+		},
+
+		// top position from top side of the container
+		// set in pixel value
+		top: {
+			type: Number,
+			value: 0
+		},
+
+		// left position from left side of the container
+		// set in pixel value
+		left: {
+			type: Number,
+			value: 0
+		},
+
+		// height of element
+		height: {
+			type: Number,
+			value: 0
+		},
+
+		// width of element
+		width: {
+			type: Number,
+			value: 0
+		},
+
+		// reverse moving direction
+		reverse: {
+			type: Boolean,
+			value: false
+		}
+	},
+	attached: function() {
+		this.fire('parallax-element-register');
+	},
+	_scrollY: function(scrollTop) {
+		var top = this.top;
+		if(this.reverse) {
+			top += scrollTop * this.sensitivity;
+		} else {
+			top -= scrollTop * this.sensitivity;
+		}
+		this.style.top = top + 'px';
+	},
+	_scrollX: function(scrollLeft) {
+		var left = this.left;
+		if(this.reverse) {
+			left += scrollLeft * this.sensitivity;
+		} else {
+			left -= scrollLeft * this.sensitivity;
+		}
+		this.style.left = left + 'px';
+	},
+	_track: function(x, y) {
+		var top = this.top;
+		var left = this.left;
+
+		if(this.reverse) {
+			top += x * this.sensitivity;
+			left += y * this.sensitivity;
+		} else {
+			top -= x * this.sensitivity;
+			left -= y * this.sensitivity;
+		}
+
+		this.style.top = top + 'px';
+		this.style.left = left + 'px';
+	}
+};
+</script>
